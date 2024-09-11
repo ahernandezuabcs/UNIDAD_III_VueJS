@@ -1,65 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>7.- Mostrar una lista y añadir un elemento nuevo al hacer click</title>
 </head>
 
 <body>
     <div id="vueApp">
-
-        <h2>Saluditos</h2>
-        {{ message + name}}
-
-        </br>
-
-        <input type="text" v-model="name" placeholder="Write your name here">
-
-        </br>
-
-        <h2>Contador de clicks</h2>
-        <button @click="clicks++">Clickeame! {{clicks}}</button>
-        <p>El boton hizo clicks {{ clicks }} times.</p>
-
-
-        </br>
-
-        <h2>Suma de dos números</h2>
-        <input type="number" v-model.number="num1" placeholder="Ingresa un numero">
-        <input type="number" v-model.number="num2" placeholder="Ingresa otro numero">
-        
-        <p>Resultado: {{ num1 + num2 }}</p>
-
+        <div>
+            <h2>7.- Mostrar una lista y añadir un elemento nuevo al hacer click</h2>
+            <form @submit.prevent="addUser">
+                <fieldset>
+                    <label for="name">Ingresa tu nombre :</label>
+                    <input type="text" v-model="name" >
+                </fieldset>
+                </br>
+                <fieldset>
+                    <label for="rol">¿Qué miembro de la familia eres?</label>
+                    <input type="text" v-model="rol" >
+                </fieldset>
+                </br>
+                <button type="submit">Agregar Usuario</button>
+            </form>
+        </div>
+        <div>
+            <ul>
+                <li v-for="user in users" >
+                    {{ user.name }} - {{ user.rol }}
+                </li>
+            </ul>
+        </div>
     </div>
 
-
-
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
+    <script src="https://unpkg.com/vue@3"></script>
     <script>
-        const { createApp, ref } = Vue
+        const { createApp, ref } = Vue;
 
         createApp({
-            setup() {
-                let message = ref('Hello ')
-                let name = ref(' ')
-                let clicks = ref(0)
-                let num1 = ref(0)
-                let num2 = ref(0)
-                let resultado = ref(0)
+            data() {
                 return {
-                    message,
-                    name,
-                    clicks, 
-                    num1,
-                    num2,
-                    resultado,
-
+                    users: [],
+                    name: '',
+                    rol: ''
+                };
+            },
+            methods: {
+                addUser() {
+                    this.users.push({ name: this.name, rol: this.rol });
+                    this.name = '';
+                    this.rol = '';
                 }
             }
-        }).mount('#vueApp')
+        }).mount('#vueApp');
     </script>
 </body>
 
