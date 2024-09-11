@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="vueApp">
+
+        <h2>Saluditos</h2>
+        {{ message + name}}
+
+        </br>
+
+        <input type="text" v-model="name" placeholder="Write your name here">
+
+        </br>
+
+        <h2>Contador de clicks</h2>
+        <button @click="clicks++">Clickeame! {{clicks}}</button>
+        <p>El boton hizo clicks {{ clicks }} times.</p>
+
+
+        </br>
+
+        <h2>Suma de dos números</h2>
+        <input type="number" v-model.number="num1" placeholder="Ingresa un numero">
+        <input type="number" v-model.number="num2" placeholder="Ingresa otro numero">
+        
+        <p>Resultado: {{ num1 + num2 }}</p>
+
+    </div>
+
+
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <script>
+        const { createApp, ref } = Vue
+
+        createApp({
+            setup() {
+                let message = ref('Hello ')
+                let name = ref(' ')
+                let clicks = ref(0)
+                let num1 = ref(0)
+                let num2 = ref(0)
+                let resultado = ref(0)
+                return {
+                    message,
+                    name,
+                    clicks, 
+                    num1,
+                    num2,
+                    resultado,
+
+                }
+            }
+        }).mount('#vueApp')
+    </script>
+</body>
+
+</html>
