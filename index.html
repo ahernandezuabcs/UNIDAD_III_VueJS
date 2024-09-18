@@ -4,33 +4,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>7.- Mostrar una lista y añadir un elemento nuevo al hacer click</title>
+    <title>11.- Realiza un login utilizando un json local haciendo uso de map, fetch</title>
 </head>
 
 <body>
     <div id="vueApp">
         <div>
-            <h2>7.- Mostrar una lista y añadir un elemento nuevo al hacer click</h2>
-            <form @submit.prevent="addUser">
+            <h2>11.- Realiza un login utilizando un json local haciendo uso de map, fetch</h2>
+            <form @submit.prevent="loggin">
                 <fieldset>
-                    <label for="name">Ingresa tu nombre :</label>
-                    <input type="text" v-model="name" >
+                    <label for="email">Ingresar email</label>
+                    <input type="text" v-model="email">
                 </fieldset>
-                </br>
+                <br>
                 <fieldset>
-                    <label for="rol">¿Qué miembro de la familia eres?</label>
-                    <input type="text" v-model="rol" >
+                    <label for="password">Ingresar password</label>
+                    <input type="password" v-model="password">
                 </fieldset>
-                </br>
-                <button type="submit">Agregar Usuario</button>
+                <br>
+                <button type="submit">Ingresar</button>
             </form>
-        </div>
-        <div>
-            <ul>
-                <li v-for="user in users" >
-                    {{ user.name }} - {{ user.rol }}
-                </li>
-            </ul>
+            
         </div>
     </div>
 
@@ -39,19 +33,47 @@
         const { createApp, ref } = Vue;
 
         createApp({
-            data() {
-                return {
-                    users: [],
-                    name: '',
-                    rol: ''
+            setup() {
+                let email = ref("");
+                let password = ref("");
+                let errorMessage = ref("");
+                let isLogged = false
+
+                const loggin = () => {
+                    fetch('users.json')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error al cargar el archivo JSON');
+
+                            }
+                            return response.json();
+                        })
+                        .then(users => {
+                            const user = users.find(user => user.email === email.value && user.password === password.value);
+
+                            if (user) {
+                                alert('Login exitoso');
+                                errorMessage.value = "";
+                            } else {
+                                errorMessage.value = "Email o contraseña incorrectos";
+                                alert(errorMessage.value);
+                                
+                                
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            errorMessage.value = "Error al cargar los datos del servidor";
+                        });
                 };
-            },
-            methods: {
-                addUser() {
-                    this.users.push({ name: this.name, rol: this.rol });
-                    this.name = '';
-                    this.rol = '';
-                }
+
+                return {
+                    email,
+                    password,
+                    loggin,
+                    errorMessage,
+                    isLogged
+                };
             }
         }).mount('#vueApp');
     </script>
