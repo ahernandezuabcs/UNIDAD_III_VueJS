@@ -4,61 +4,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>11.- Realiza un login utilizando un json local haciendo uso de map, fetch</title>
+    <title>12.- Completa el login, guardar en sesión js los datos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
-    <div id="vueApp">
-        <div>
-            <h2>11.- Realiza un login utilizando un json local haciendo uso de map, fetch</h2>
-            <form @submit.prevent="loggin">
-                <fieldset>
-                    <label for="email">Ingresar email</label>
-                    <input type="text" v-model="email">
-                </fieldset>
-                <br>
-                <fieldset>
-                    <label for="password">Ingresar password</label>
-                    <input type="password" v-model="password">
-                </fieldset>
-                <br>
-                <button type="submit">Ingresar</button>
-            </form>
-            
+    <div id="vueApp" class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title text-center">Acceder a los datos</h2>
+                        <!--login-->
+                        <form v-if="!isLogged" @submit.prevent="loggin" class="mt-4">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Ingresar correo</label>
+                                <input type="text" id="email" class="form-control" v-model="email">
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Ingresar contraseña</label>
+                                <input type="password" id="password" class="form-control" v-model="password">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+                        </form>
+
+                         <!--msj de error-->
+                        <p v-if="errorMessage" class="text-danger mt-3 text-center">{{ errorMessage }}</p>
+
+                        <!--lista de usuarios-->
+                        <div v-if="isLogged">
+                            <h3 class="text-center">Bienvenido, {{ email }}</h3>
+                            <button @click="logout" class="btn btn-danger w-100 mt-3">Cerrar sesión</button>
+
+                            <h4 class="mt-4">Usuarios registrados:</h4>
+                            <ul class="list-group">
+                                <li class="list-group-item" v-for="user in users" :key="user.email">
+                                    {{ user.email }} - {{ user.name }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/vue@3"></script>
     <script>
-        const { createApp, ref } = Vue;
+        const { createApp, ref, onMounted } = Vue;
 
         createApp({
             setup() {
                 let email = ref("");
                 let password = ref("");
                 let errorMessage = ref("");
-                let isLogged = false
+                let users = ref([]);
+                let isLogged = ref(false);
 
                 const loggin = () => {
                     fetch('users.json')
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error('Error al cargar el archivo JSON');
-
                             }
                             return response.json();
                         })
-                        .then(users => {
-                            const user = users.find(user => user.email === email.value && user.password === password.value);
+                        .then(data => {
+                            const user = data.find(user => user.email === email.value && user.password === password.value);
 
                             if (user) {
                                 alert('Login exitoso');
                                 errorMessage.value = "";
+                                sessionStorage.setItem('user', JSON.stringify(user)); // se guarda la sesion 
+                                isLogged.value = true;
+                                users.value = data; //mostrar datos
                             } else {
                                 errorMessage.value = "Email o contraseña incorrectos";
                                 alert(errorMessage.value);
-                                
-                                
                             }
                         })
                         .catch(error => {
@@ -67,16 +89,42 @@
                         });
                 };
 
+                const logout = () => {
+                    sessionStorage.removeItem('user');
+                    isLogged.value = false;
+                    email.value = "";
+                    password.value = "";
+                };
+
+                onMounted(() => {
+                    const storedUser = sessionStorage.getItem('user');
+                    if (storedUser) {
+                        const user = JSON.parse(storedUser);
+                        email.value = user.email;
+                        isLogged.value = true;
+
+                        //usuarios se muestran si login es exitoso
+                        fetch('users.json')
+                            .then(response => response.json())
+                            .then(data => {
+                                users.value = data;
+                            });
+                    }
+                });
+
                 return {
                     email,
                     password,
                     loggin,
                     errorMessage,
-                    isLogged
+                    isLogged,
+                    users,
+                    logout
                 };
             }
         }).mount('#vueApp');
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
