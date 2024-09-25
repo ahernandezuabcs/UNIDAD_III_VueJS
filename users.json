@@ -1,12 +1,12 @@
 [
   {
-      "email": "usuario@example.com",
-      "password": "contraseña123",
-      "name": "Usuario"
+      "email": "alvaro@alvaro.com",
+      "password": "123456",
+      "name": "Alvaro"
   },
   {
-      "email": "otro@example.com",
-      "password": "otraContraseña",
-      "name": "Otro Usuario"
+      "email": "martin@martin.com",
+      "password": "654321",
+      "name": "Martin"
   }
 ]
