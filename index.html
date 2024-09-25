@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>12.- Completa el login, guardar en sesión js los datos</title>
+    <title>Login con Options API</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
@@ -15,7 +15,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h2 class="card-title text-center">Acceder a los datos</h2>
-                        <!--login-->
+
                         <form v-if="!isLogged" @submit.prevent="loggin" class="mt-4">
                             <div class="mb-3">
                                 <label for="email" class="form-label">Ingresar correo</label>
@@ -28,18 +28,18 @@
                             <button type="submit" class="btn btn-primary w-100">Ingresar</button>
                         </form>
 
-                         <!--msj de error-->
                         <p v-if="errorMessage" class="text-danger mt-3 text-center">{{ errorMessage }}</p>
 
-                        <!--lista de usuarios-->
                         <div v-if="isLogged">
-                            <h3 class="text-center">Bienvenido, {{ email }}</h3>
+                            <h3 class="text-center">Bienvenido, {{ name }}</h3>
                             <button @click="logout" class="btn btn-danger w-100 mt-3">Cerrar sesión</button>
 
                             <h4 class="mt-4">Usuarios registrados:</h4>
                             <ul class="list-group">
-                                <li class="list-group-item" v-for="user in users" :key="user.email">
+                                <li class="list-group-item" v-for="(user, index) in users" :key="user.email">
                                     {{ user.email }} - {{ user.name }}
+                                    <button @click="editUser(index)" class="btn btn-warning btn-sm float-end">Editar</button>
+                                    <button @click="deleteUser(index)" class="btn btn-danger btn-sm float-end me-2">Eliminar</button>
                                 </li>
                             </ul>
                         </div>
@@ -47,21 +47,54 @@
                 </div>
             </div>
         </div>
+
+        
+        <div class="modal fade" tabindex="-1" v-if="showEditModal" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Editar Usuario</h5>
+                        <button type="button" class="btn-close" @click="closeEditModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="editEmail" class="form-label">Correo</label>
+                            <input type="text" id="editEmail" class="form-control" v-model="editUserData.email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editName" class="form-label">Nombre</label>
+                            <input type="text" id="editName" class="form-control" v-model="editUserData.name">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="closeEditModal">Cerrar</button>
+                        <button type="button" class="btn btn-primary" @click="saveUser">Guardar cambios</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
-        const { createApp, ref, onMounted } = Vue;
-
+        const { createApp, ref} = Vue;
         createApp({
-            setup() {
-                let email = ref("");
-                let password = ref("");
-                let errorMessage = ref("");
-                let users = ref([]);
-                let isLogged = ref(false);
-
-                const loggin = () => {
+            data() {
+                return {
+                    name: "",
+                    email: "",
+                    password: "",
+                    errorMessage: "",
+                    users: [],
+                    isLogged: false,
+                    showEditModal: false,
+                    editUserData: {},
+                    editUserIndex: null
+                };
+            },
+            methods: {
+                loggin() {
+                    this.errorMessage = "";
                     fetch('users.json')
                         .then(response => {
                             if (!response.ok) {
@@ -70,57 +103,63 @@
                             return response.json();
                         })
                         .then(data => {
-                            const user = data.find(user => user.email === email.value && user.password === password.value);
-
+                            let user = data.find(user => user.email === this.email && user.password === this.password);
                             if (user) {
-                                alert('Login exitoso');
-                                errorMessage.value = "";
-                                sessionStorage.setItem('user', JSON.stringify(user)); // se guarda la sesion 
-                                isLogged.value = true;
-                                users.value = data; //mostrar datos
+                                this.errorMessage = "";
+                                localStorage.setItem('user', JSON.stringify(user));
+                                this.isLogged = true;
+                                this.users = data;
                             } else {
-                                errorMessage.value = "Email o contraseña incorrectos";
-                                alert(errorMessage.value);
+                                this.errorMessage = "Email o contraseña incorrectos";
+                                alert(this.errorMessage);
                             }
                         })
                         .catch(error => {
                             console.error("Error:", error);
-                            errorMessage.value = "Error al cargar los datos del servidor";
+                            this.errorMessage = "Error al cargar los datos del servidor";
                         });
-                };
+                },
+                logout() {
+                    localStorage.removeItem('user');
+                    this.isLogged = false;
+                    this.email = "";
+                    this.password = "";
+                },
+                deleteUser(index) {
+                    this.users.splice(index, 1);
+                },
+                editUser(index) {
+                    this.editUserIndex = index;
+                    this.editUserData = { ...this.users[index] };
+                    this.showEditModal = true;
+                    this.$nextTick(() => {
+                        const modal = new bootstrap.Modal(document.querySelector('.modal'));
+                        modal.show();
+                    });
+                },
+                saveUser() {
+                    this.users[this.editUserIndex] = this.editUserData;
+                    this.closeEditModal();
+                },
+                closeEditModal() {
+                    this.showEditModal = false;
+                    this.editUserData = {};
+                    this.editUserIndex = null;
+                }
+            },
+            mounted() {
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) {
+                    const user = JSON.parse(storedUser);
+                    this.email = user.email;
+                    this.isLogged = true;
 
-                const logout = () => {
-                    sessionStorage.removeItem('user');
-                    isLogged.value = false;
-                    email.value = "";
-                    password.value = "";
-                };
-
-                onMounted(() => {
-                    const storedUser = sessionStorage.getItem('user');
-                    if (storedUser) {
-                        const user = JSON.parse(storedUser);
-                        email.value = user.email;
-                        isLogged.value = true;
-
-                        //usuarios se muestran si login es exitoso
-                        fetch('users.json')
-                            .then(response => response.json())
-                            .then(data => {
-                                users.value = data;
-                            });
-                    }
-                });
-
-                return {
-                    email,
-                    password,
-                    loggin,
-                    errorMessage,
-                    isLogged,
-                    users,
-                    logout
-                };
+                    fetch('users.json')
+                        .then(response => response.json())
+                        .then(data => {
+                            this.users = data;
+                        });
+                }
             }
         }).mount('#vueApp');
     </script>
