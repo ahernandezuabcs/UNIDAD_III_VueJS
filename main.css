@@ -1,0 +1,44 @@
+/* Variables */
+/* Estilos generales */
+body {
+  background: #fff;
+}
+/* Estilos del formulario */
+.container {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 10px;
+  width: 50%;
+  margin: auto;
+  box-shadow: 8px 8px 24px 0px #42445a;
+}
+/* Estilos de los campos de entrada */
+input[type="text"],
+input[type="password"] {
+  width: auto;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #fff;
+  background-color: #fff;
+}
+/* Estilos de la lista de opciones */
+li {
+  margin-bottom: 5px;
+  padding: 10px;
+  border-radius: 5px;
+}
+li:nth-child(1) {
+  background-color: #007BFF;
+}
+li:nth-child(2) {
+  background-color: #228B22;
+}
+li:nth-child(3) {
+  background-color: #FFA500;
+}
+li:nth-child(4) {
+  background-color: #DC143C;
+}
+li:nth-child(5) {
+  background-color: #0ff;
+}
