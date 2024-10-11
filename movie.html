@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="movieDetails" class="container mt-5">
+        <div v-if="movie && movie.poster_path" class="row">
+            <div class="col-md-4">
+                <img :src="'https://image.tmdb.org/t/p/w500/' + movie.poster_path" class="img-fluid"
+                    :alt="movie.original_title">
+            </div>
+            <div class="col-md-8">
+                <h2>{{ movie.original_title }}</h2>
+                <p>{{ movie.overview }}</p>
+                <h5>Release Date: {{ movie.release_date }}</h5>
+                <h5>Rating: {{ movie.vote_average }}</h5>
+                <hr>
+                <h4>Add your rating:</h4>
+                <select v-model="userRating" class="form-select w-25 mb-3">
+                    <option disabled value="">Select a rating</option>
+                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                </select>
+                <button @click="submitRating" class="btn btn-success">Submit Rating</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <script>
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                const movie = ref({});
+                const userRating = ref('');
+                const movieId = ref(null); // Mantén el ID de la película disponible
+
+                const submitRating = () => {
+                    if (userRating.value) {
+                        // Enviar el rating a la API
+                        const myHeaders = new Headers();
+                        myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhMGMwYWZhNTU1ZWZiNDU4YzQ0MzEzNTA4NmE2ZWFlMSIsIm5iZiI6MTcyODYxNTkwMS4wMDM2MzksInN1YiI6IjY3MDg1ODYyZjE4OTE5ZGQ0YzQ4MmVmMSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.l6L1Rw9NYORGN9IIE0ytQLzJaaDced3a6b-POSBiS8c");
+                        myHeaders.append("Content-Type", "application/json;charset=utf-8");
+
+                        const raw = JSON.stringify({
+                            value: userRating.value * 2 // TMDb acepta ratings en base a 20
+                        });
+
+                        const requestOptions = {
+                            method: 'POST',
+                            headers: myHeaders,
+                            body: raw,
+                            redirect: 'follow'
+                        };
+
+                        fetch(`https://api.themoviedb.org/3/movie/${movieId.value}/rating`, requestOptions)
+                            .then(response => response.json())
+                            .then(result => {
+                                console.log('Rating enviado:', result);
+                                alert(`Rating enviado: ${userRating.value}/10`);
+                            })
+                            .catch(error => console.error('Error enviando rating:', error));
+                    } else {
+                        alert('Please select a rating before submitting.');
+                    }
+                };
+
+                return {
+                    movie,
+                    userRating,
+                    submitRating
+                };
+            },
+            mounted() {
+                const fetchMovieDetails = (id) => {
+                    const myHeaders = new Headers();
+                    myHeaders.append("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhMGMwYWZhNTU1ZWZiNDU4YzQ0MzEzNTA4NmE2ZWFlMSIsIm5iZiI6MTcyODYxNTkwMS4wMDM2MzksInN1YiI6IjY3MDg1ODYyZjE4OTE5ZGQ0YzQ4MmVmMSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.l6L1Rw9NYORGN9IIE0ytQLzJaaDced3a6b-POSBiS8c");
+
+                    const requestOptions = {
+                        method: "GET",
+                        headers: myHeaders,
+                        redirect: "follow"
+                    };
+
+                    fetch(`https://api.themoviedb.org/3/movie/${id}`, requestOptions)
+                        .then(response => response.json())
+                        .then(result => {
+                            console.log(result);
+                            this.movie = result;
+                        })
+                        .catch(error => console.error(error));
+                };
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const id = urlParams.get('id');
+                this.movieId = id; // Guardar el ID de la película
+                fetchMovieDetails(id);
+            }
+        }).mount('#movieDetails');
+    </script>
+
+</body>
+
+</html>
